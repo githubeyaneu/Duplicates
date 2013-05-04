@@ -3,6 +3,9 @@
   <groupId>eu.eyan.duplicates</groupId>
   <artifactId>Duplicates</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <reports>
+  	<report>maven-pmd-plugin</report>
+  </reports>
   <dependencies>
   	<dependency>
   		<groupId>org.easytesting</groupId>

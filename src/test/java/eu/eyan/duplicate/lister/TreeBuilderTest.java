@@ -48,6 +48,12 @@ public class TreeBuilderTest {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		if(3==3){
+			
+		}
+		else{
+			
+		}
 		
 		assertThat(new File(root)).isDirectory();
 		assertThat(new File(root+"\\1")).isDirectory();
