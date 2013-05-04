@@ -3,58 +3,21 @@ package eu.eyan.duplicate.lister;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.junit.Test;
 
+import eu.eyan.duplicate.lister.helper.AbstractTreeTest;
 import eu.eyan.duplicate.lister.helper.Dir;
-import eu.eyan.duplicate.lister.helper.Fil;
 import eu.eyan.duplicate.lister.helper.TreeBuilder;
 
-public class TreeBuilderTest {
-
-	private static final int FILE_CONTENT_SEED = 123;
-	private static final int FILE_SIZE = 123;
-
+public class TreeBuilderTest extends AbstractTreeTest {
+	
 	@Test
 	public void buildTreeShouldWorkCorrect() {
-		Fil sameFil = new Fil("same.binary").withRandomBinaryContent(FILE_SIZE, FILE_CONTENT_SEED);
-		String root = "C:\\temp\\test";
-		TreeBuilder tree = new TreeBuilder(root)
-			.withDir(new Dir("1")
-				.withDir(new Dir("11")
-					.withFil(new Fil("11f1"))
-					.withFil(new Fil("11f2"))
-					.withFil(sameFil)
-				)
-				.withDir(new Dir("12"))
-				.withFil(new Fil("1f1"))
-				.withFil(new Fil("1f2"))
-				.withFil(sameFil)
-			)
-			.withDir(new Dir("2")
-				.withDir(new Dir("21"))
-				.withDir(new Dir("22"))
-				.withDir(new Dir("23"))
-			)
-			.withFil(sameFil);
-		
-		
 		tree.delete();
 		assertThat(new File(root)).doesNotExist();
 		
-		try {
-			tree.build();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		if(3==3){
-			
-		}
-		else{
-			
-		}
-		
+		tree.build();
 		assertThat(new File(root)).isDirectory();
 		assertThat(new File(root+"\\1")).isDirectory();
 		assertThat(new File(root+"\\1\\11")).isDirectory();
@@ -76,4 +39,23 @@ public class TreeBuilderTest {
 		assertThat(new File(root+"\\same.binary")).isFile();
 	}
 
+	
+	@Test(timeout = 1000)
+	public void buildTreeShouldNotAcceptCircledDirectories() {
+		thrown.expect(IllegalStateException.class);
+		thrown.expectMessage(TreeBuilder.CIRCLE_IN_DIRS_MESSAGE);
+		Dir dir1 = new Dir("Dir1");
+		Dir dir2 = new Dir("Dir2");
+		Dir dir3 = new Dir("Dir3");
+		dir1.withDir(dir2);
+		dir2.withDir(dir3);
+		dir3.withDir(dir1);
+		TreeBuilder tree = new TreeBuilder(root)
+								.withDir(dir1)
+								.withDir(dir2)
+								.withDir(dir3);
+
+		tree.delete();
+		tree.build();
+	}
 }

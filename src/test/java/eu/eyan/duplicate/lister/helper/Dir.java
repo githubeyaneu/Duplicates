@@ -13,20 +13,20 @@ import com.google.common.collect.Lists;
 public class Dir implements Nameable {
 
 	private String dirName;
-	private List<Dir> myDirs = Lists.newArrayList();
-	private List<Fil> myFils = Lists.newArrayList();
+	private List<Dir> subDirs = Lists.newArrayList();
+	private List<Fil> fils = Lists.newArrayList();
 
 	public Dir(String dirName) {
 		this.dirName = dirName;
 	}
 
 	public Dir withDir(Dir dir) {
-		myDirs.add(dir);
+		subDirs.add(dir);
 		return this;
 	}
 
 	public Dir withFil(Fil fil) {
-		myFils.add(fil);
+		fils.add(fil);
 		return this;
 	}
 
@@ -35,9 +35,9 @@ public class Dir implements Nameable {
 	}
 
 	protected void validate() {
-		validateNoDuplicates(myDirs);
-		validateNoDuplicates(myFils);
-		for (Dir dir : myDirs) {
+		validateNoDuplicates(subDirs);
+		validateNoDuplicates(fils);
+		for (Dir dir : subDirs) {
 			dir.validate();
 		}
 	}
@@ -60,19 +60,23 @@ public class Dir implements Nameable {
 	}
 
 	private void build(File path) throws IOException {
-		for (Dir dir : myDirs) {
+		for (Dir dir : subDirs) {
 			File d = new File(path, dir.dirName);
 			d.mkdir();
 			dir.build(d);
 		}
-		for (Fil fil : myFils) {
+		for (Fil fil : fils) {
 			fil.build(path);
 		}
 	}
 
-	public void buildAsRoot() throws IOException {
+	protected void buildAsRoot() throws IOException {
 		File root = new File(dirName);
 		root.mkdirs();
 		build(root);
+	}
+
+	protected List<Dir> getSubDirs() {
+		return subDirs;
 	}
 }
