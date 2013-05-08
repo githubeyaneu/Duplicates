@@ -19,7 +19,7 @@ public abstract class AbstractTreeTest {
 	@Before
 	public void setUp(){
 		sameFil = new Fil("same.binary").withRandomBinaryContent(FILE_SIZE, FILE_CONTENT_SEED);
-		root = "C:\\temp\\test";
+		root = "temp\\test";
 		tree = createTestTree(sameFil, root);
 	}
 	
