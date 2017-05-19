@@ -3,7 +3,6 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>eu.eyan.duplicates</groupId>
 	<artifactId>Duplicates</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<reports>
 		<report>maven-pmd-plugin</report>
 	</reports>
@@ -43,4 +42,9 @@
 			</plugin>
 		</plugins>
 	</reporting>
+	<parent>
+		<groupId>eu.eyan</groupId>
+		<artifactId>maven-exts</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
 </project>
