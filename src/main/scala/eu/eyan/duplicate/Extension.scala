@@ -20,7 +20,7 @@ object Extension extends App {
   println(files.filter(_.file.extension.startsWith(".GIF")).mkString("\r\n"))
 
   def readFiles() = {
-    """C:\tmp\IKLvid.txt""".linesFromFile map { l => {val f3 = l.split(";");Fil(new File(f3(0)), f3(2).toBoolean, f3(1).toLong) } }
+    """C:\tmp\IKLvid.txt""".linesFromFile map { l => {val f3 = l.split(";");Fil(new File(f3(0)), f3(2).toBoolean, f3(1).toLong, new File(f3(3)).hash) } }
   }
   
   def writeFilesToTxt = {

@@ -26,11 +26,12 @@ object Duplicator extends App {
   indexList.onSelectionChanged(() => { deleteIndexButton.setEnabled(indexList.getSelectedIndices.nonEmpty) })
   val addRemovePanel = indexPanel.newColumn.addPanelWithFormLayout()
 
-  val deleteIndexButton = addRemovePanel.addButton("Delete", e => { indexList.getSelectedValuesList.foreach(_.asFile.delete); readIndices }).disabled
+  val deleteIndexButton = addRemovePanel.addButton("Delete", e => { println("Delete: " + indexList.getSelectedValuesList.mkString); indexList.getSelectedValuesList.foreach(_.asFile.delete); readIndices }).disabled
   val locationToIndex = addRemovePanel.newRow.addTextField("""i:\videos""", 30)
   addRemovePanel.newRow.addButton("Create Index", e => Index.create(locationToIndex.getText, indexLocation.getText, () => readIndices))
 
-  val panel = new JPanelWithFrameLayout
+  val panel = new JPanelWithFrameLayout()
+	panel.newColumn("f:p:g")
   panel.addSeparatorWithTitle("Indices")
   panel.newRow.add(indexPanel)
   
@@ -42,7 +43,7 @@ object Duplicator extends App {
     case "Size" => duplicate(0).sizeReadable
     case _      => "n.a."
   })
-  val duplicates = panel.newColumn.addList[String]
+  val duplicates = panel.newRow.addList[String]
 	table onSelectionChanged {()=>showDuplicates} 
 
 	def showDuplicates = {
@@ -61,7 +62,7 @@ object Duplicator extends App {
 	
 	def findDuplicates(fils: List[Fil])={
     val bigs = fils.filter(_.size>100*1000*1000)
-    val groups = bigs.groupBy(f=>(f.file.getName+f.size)).values
+    val groups = bigs.groupBy(f=>(f.file.getName+f.size+f.hash)).values
     val duplicates = groups.filter(1<_.size).toList.sortWith((l,r)=>l(0).size<r(0).size)
     for( duplicate <- duplicates){
       println(duplicate(0).size)
