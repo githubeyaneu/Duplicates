@@ -19,16 +19,16 @@ object Duplicator extends App {
   val indexPanel = new JPanelWithFrameLayout
   indexPanel.addLabel("Index location")
   val indexLocation = indexPanel.newColumn.addTextField("""c:\tmp\idx""", 10)
-  val readIndexButton = indexPanel.newColumn.addButton("  Read index  ", e => readIndices)
+  val readIndexButton = indexPanel.newColumn.addButton("  Read index  ").addAction( e => readIndices)
 
   indexPanel.newRow("f:p")
   val indexList = indexPanel.addList[String]
   indexList.onSelectionChanged(() => { deleteIndexButton.setEnabled(indexList.getSelectedIndices.nonEmpty) })
   val addRemovePanel = indexPanel.newColumn.addPanelWithFormLayout()
 
-  val deleteIndexButton = addRemovePanel.addButton("Delete", e => { println("Delete: " + indexList.getSelectedValuesList.mkString); indexList.getSelectedValuesList.foreach(_.asFile.delete); readIndices }).disabled
+  val deleteIndexButton = addRemovePanel.addButton("Delete").addAction( e => { println("Delete: " + indexList.getSelectedValuesList.mkString); indexList.getSelectedValuesList.foreach(_.asFile.delete); readIndices }).disabled
   val locationToIndex = addRemovePanel.newRow.addTextField("""i:\videos""", 30)
-  addRemovePanel.newRow.addButton("Create Index", e => Index.create(locationToIndex.getText, indexLocation.getText, () => readIndices))
+  addRemovePanel.newRow.addButton("Create Index").addAction( e => Index.create(locationToIndex.getText, indexLocation.getText, () => readIndices))
 
   val panel = new JPanelWithFrameLayout()
 	panel.newColumn("f:p:g")
