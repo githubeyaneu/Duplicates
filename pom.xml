@@ -103,7 +103,7 @@
 	</build>
 
 	<dependencies>
-	
+
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava-collections</artifactId>
@@ -166,7 +166,7 @@
 			<artifactId>fest-assert</artifactId>
 			<version>1.4</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.easytesting</groupId>
 			<artifactId>fest-swing</artifactId>
@@ -179,6 +179,12 @@
 			<artifactId>mockito-all</artifactId>
 			<version>1.8.4</version>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>eu.eyan.util</groupId>
+			<artifactId>eyan_helper</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
 	</dependencies>
