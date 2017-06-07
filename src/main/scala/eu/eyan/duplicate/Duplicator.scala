@@ -12,6 +12,8 @@ import java.io.BufferedWriter
 import java.io.File
 import javax.swing.table.TableModel
 import eu.eyan.util.awt.ComponentPlus.ComponentPlusImplicit
+import eu.eyan.util.swing.JFramePlus.JFramePlusImplicit
+import javax.swing.JFrame
 
 
 object Duplicator extends App {
@@ -72,5 +74,5 @@ object Duplicator extends App {
     duplicates
 	}
 
-	new JFramePlus("Duplicator", panel).packAndSetVisible.positionToCenter
+	new JFrame().title("Duplicator").withComponent(panel).packAndSetVisible.positionToCenter
 }
