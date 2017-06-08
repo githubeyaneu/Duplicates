@@ -1,3 +1,6 @@
 /target
 .settings
 /repository
+/.cache-main
+/.cache-tests
+/Duplicates.iml
