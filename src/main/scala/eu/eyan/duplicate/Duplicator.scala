@@ -12,6 +12,11 @@ import java.io.BufferedWriter
 import java.io.File
 import javax.swing.table.TableModel
 import eu.eyan.util.awt.ComponentPlus.ComponentPlusImplicit
+<<<<<<< HEAD
+=======
+import eu.eyan.util.swing.JFramePlus.JFramePlusImplicit
+import javax.swing.JFrame
+>>>>>>> branch 'master' of https://github.com/githubeyaneu/Duplicates.git
 
 
 object Duplicator extends App {
@@ -20,16 +25,28 @@ object Duplicator extends App {
   val indexPanel = new JPanelWithFrameLayout
   indexPanel.addLabel("Index location")
   val indexLocation = indexPanel.newColumn.addTextField("""c:\tmp\idx""", 10)
+<<<<<<< HEAD
   val readIndexButton = indexPanel.newColumn.addButton("  Read index  ").onAction(() => readIndices)
+=======
+  val readIndexButton = indexPanel.newColumn.addButton("  Read index  ").addAction( e => readIndices)
+>>>>>>> branch 'master' of https://github.com/githubeyaneu/Duplicates.git
 
   indexPanel.newRow("f:p")
   val indexList = indexPanel.addList[String]
   indexList.onSelectionChanged(() => { deleteIndexButton.setEnabled(indexList.getSelectedIndices.nonEmpty) })
   val addRemovePanel = indexPanel.newColumn.addPanelWithFormLayout()
 
+<<<<<<< HEAD
   val deleteIndexButton = addRemovePanel.addButton("Delete").onAction(() => { println("Delete: " + indexList.getSelectedValuesList.mkString); indexList.getSelectedValuesList.foreach(_.asFile.delete); readIndices }).disabled
+=======
+  val deleteIndexButton = addRemovePanel.addButton("Delete").addAction( e => { println("Delete: " + indexList.getSelectedValuesList.mkString); indexList.getSelectedValuesList.foreach(_.asFile.delete); readIndices }).disabled
+>>>>>>> branch 'master' of https://github.com/githubeyaneu/Duplicates.git
   val locationToIndex = addRemovePanel.newRow.addTextField("""i:\videos""", 30)
+<<<<<<< HEAD
   addRemovePanel.newRow.addButton("Create Index").onAction(() => Index.create(locationToIndex.getText, indexLocation.getText, () => readIndices))
+=======
+  addRemovePanel.newRow.addButton("Create Index").addAction( e => Index.create(locationToIndex.getText, indexLocation.getText, () => readIndices))
+>>>>>>> branch 'master' of https://github.com/githubeyaneu/Duplicates.git
 
   val panel = new JPanelWithFrameLayout()
 	panel.newColumn("f:p:g")
@@ -72,5 +89,5 @@ object Duplicator extends App {
     duplicates
 	}
 
-  new JFramePlus("Duplicator", panel).packAndSetVisible.positionToCenter
+	new JFrame().title("Duplicator").withComponent(panel).packAndSetVisible.positionToCenter
 }
