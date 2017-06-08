@@ -22,7 +22,7 @@ public class DuplicateFinder {
 			}
 		};
 		Collection<Fil> files = listFiles(roots, sizeFilter);
-		Collection<Collection<Fil>> duplicates = findDuplicates(files);
+		/*Collection<Collection<Fil>> duplicates = */findDuplicates(files);
 	}
 
 	private static Collection<Collection<Fil>> findDuplicates(Collection<Fil> files) {
