@@ -29,7 +29,7 @@ object Fil{
 }
 
 object Index {
-  def create(locationToIndex: String, locationToStore: String, finished: () => Unit) = {
+  def create(locationToIndex: String, locationToStore: String, finished: => Unit) = {
     if (locationToIndex.asFile.isDirectory) {
       val tree = FilePlus.fileTrees(locationToIndex)
       val bw = new BufferedWriter(new FileWriter(locationToStore + "\\" + locationToIndex.toSafeFileName))
@@ -37,7 +37,7 @@ object Index {
       bw.close
     }
 
-    finished()
+    finished
   }
 
   def load(indexLocation: String) = indexLocation.linesFromFile map Fil.lineToFil
