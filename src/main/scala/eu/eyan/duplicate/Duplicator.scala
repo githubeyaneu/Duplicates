@@ -12,6 +12,7 @@ import eu.eyan.util.swing.JTablePlus.JTableImplicit
 import javax.swing.JFrame
 import javax.swing.JList
 import eu.eyan.util.swing.SwingPlus
+import eu.eyan.util.swing.JButtonPlus.JButtonImplicit
 
 object Duplicator extends App {
   type Duplicate = List[Fil]
