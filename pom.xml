@@ -195,14 +195,14 @@
 		<report>maven-pmd-plugin</report>
 	</reports>
 
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>2.5.2</version>
-			</plugin>
-		</plugins>
-	</reporting>
+<!--	<reporting>-->
+<!--		<plugins>-->
+<!--			<plugin>-->
+<!--				<groupId>org.codehaus.mojo</groupId>-->
+<!--				<artifactId>findbugs-maven-plugin</artifactId>-->
+<!--				<version>2.5.2</version>-->
+<!--			</plugin>-->
+<!--		</plugins>-->
+<!--	</reporting>-->
 
 </project>
