@@ -7,6 +7,7 @@ import java.io.BufferedWriter
 import java.io.File
 import eu.eyan.util.io.FilePlus.FilePlusImplicit
 import scala.util.Try
+import eu.eyan.util.io.FilePlus.FilePlusImplicit
 
 case class Fil(file: File, isFile: Boolean, size: Long, hash: String) {
 	def sizeReadable =
@@ -29,15 +30,15 @@ object Fil{
 }
 
 object Index {
-  def create(locationToIndex: String, locationToStore: String, finished: () => Unit) = {
+  def create(locationToIndex: String, locationToStore: String, finished: => Unit) = {
     if (locationToIndex.asFile.isDirectory) {
-      val tree = FilePlus.fileTrees(locationToIndex)
+      val tree = locationToIndex.asFile.fileTreeWithItself
       val bw = new BufferedWriter(new FileWriter(locationToStore + "\\" + locationToIndex.toSafeFileName))
-      tree.foreach { f => println(f); bw.write(f + ";" + f.length + ";" + f.isFile + ";" + f.hash + "\r\n") }
+      tree.foreach { f => println(f); bw.write(f + ";" + f.length + ";" + f.isFile + ";" + f.hashSimple + "\r\n") }
       bw.close
     }
 
-    finished()
+    finished
   }
 
   def load(indexLocation: String) = indexLocation.linesFromFile map Fil.lineToFil
