@@ -17,7 +17,7 @@ object DuplicateDelete extends App {
   panel.newRow.addButton("Find duplicates").onAction_disableEnable(findDuplicates(false))
   panel.newRow.addButton("Delete duplicates").onAction_disableEnable(findDuplicates(true))
   val progress = panel.newRow.addProgressBar(0, 1, "%dMB")
-  val logs = panel.newRow("f:1px:g").span(1).addTextArea("")
+  val logs = panel.newRow("f:1px:g").span(1).addTextArea()
 
   val frame = new JFrame()
     .title("Handle duplicates")
@@ -29,8 +29,8 @@ object DuplicateDelete extends App {
 
   dirs.onChanged(() => frame.size(frame.getWidth + 1, frame.getHeight + 1))
 
-  private def findDuplicates(withDelete: Boolean) = {
-    val files = dirs.getValues.map(_.asDir.fileTreeWithItself.filter(_.isFile).toList).flatten.distinct
+  private def findDuplicates(withDelete: Boolean): Unit = {
+    val files = dirs.getValues.flatMap(_.asDir.fileTreeWithItself.filter(_.isFile).toList).distinct
     val fileGroupsByLength = files.groupBy(_.length())
 
     val filesSingle = fileGroupsByLength.filter(_._2.size == 1).values.flatten.toList
@@ -72,8 +72,8 @@ object DuplicateDelete extends App {
           val filesToDelete = files.tail
 
           logs.append(hash + "\n")
-          logs.append(("Keep", fileToKeep.length, fileToKeep.getName) + "\n")
-          logs.append(filesToDelete.map(file => ("Delete", file.length, file.getName)).mkString("\n"))
+          logs.append(("Keep", fileToKeep.length, fileToKeep.getAbsolutePath) + "\n")
+          logs.append(filesToDelete.map(file => ("Delete", file.length, file.getAbsolutePath)).mkString("\n"))
           if (withDelete) filesToDelete.foreach(_.delete)
         }
       }
