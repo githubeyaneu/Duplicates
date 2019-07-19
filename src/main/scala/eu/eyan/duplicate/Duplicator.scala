@@ -1,5 +1,12 @@
 package eu.eyan.duplicate
 
+import eu.eyan.util.string.StringPlus.StringPlusImplicit
+import eu.eyan.util.swing.JButtonPlus.JButtonImplicit
+import eu.eyan.util.swing.JFramePlus.JFramePlusImplicit
+import eu.eyan.util.swing.JListPlus.JListImplicit
+import eu.eyan.util.swing.JPanelWithFrameLayout
+import javax.swing.JFrame
+
 import scala.collection.JavaConversions._
 
 import eu.eyan.util.swing.JListPlus.JListImplicit
