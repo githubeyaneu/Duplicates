@@ -7,17 +7,51 @@ import eu.eyan.util.swing.JButtonPlus.JButtonImplicit
 import eu.eyan.util.string.StringPlus.StringPlusImplicit
 import eu.eyan.util.io.FilePlus.FilePlusImplicit
 import eu.eyan.util.swing.SwingPlus
+import eu.eyan.util.swing.MultiFieldJTextField
+import eu.eyan.util.awt.MultiField
+import javax.swing.JTextField
+import eu.eyan.util.swing.JTextFieldPlus.JTextFieldPlusImplicit
+
+class TextFieldWithCheckBox(size: Int) extends JPanelWithFrameLayout {
+  withSeparators
+  val textField = addTextField("", size)
+  val checkBox = newColumn.addCheckBox("Allow to delete", false)
+  def onKeyReleased(action: => Unit) = {textField.onKeyReleased(action); this}
+}
+class MultiFieldJTextFieldWithCheckbox(columnName: String, columns: Int = 0) extends MultiField[Tuple2[String, Boolean], TextFieldWithCheckBox](columnName) {
+  protected def createEditor(fieldEdited: TextFieldWithCheckBox => Unit) = {
+    val editor = new TextFieldWithCheckBox(columns)
+    editor.onKeyReleased(fieldEdited(editor))
+  }
+
+  protected def getValue(editor: TextFieldWithCheckBox) = {
+    val text = editor.textField.getText.trim
+    if (text.isEmpty) None else Some((text, editor.checkBox.isSelected))
+  }
+
+  protected def stringToValue(string: String): Tuple2[String, Boolean] = (string, false)
+  protected def setValueInEditor(editor: TextFieldWithCheckBox)(value: (String, Boolean)): Unit = editor.textField.setText(value._1)
+  protected def valueToString(value: (String, Boolean)): String = value._1
+
+  def getTexts = getValues.map(_._1)
+}
 
 object DuplicateDelete extends App {
 
   val panel = new JPanelWithFrameLayout().withBorders.withSeparators
   panel.newColumn.newColumnFPG
   panel.addSeparatorWithTitle("Directories to search")
-  val dirs = panel.newRow.addTextFieldMulti("dirsToSearch", 30, List()).rememberValueInRegistry("dirsToSearch")
+  //  val dirs = panel.newRow.addTextFieldMulti("dirsToSearch", 30, List()).rememberValueInRegistry("dirsToSearch")
+  val dirs = new MultiFieldJTextFieldWithCheckbox("dirsToSearch", 30)
+  dirs.rememberValueInRegistry("dirsToSearch")
+  panel.newRow.add(dirs)
+
+  val multi = new MultiFieldJTextField("name", 30)
+
   panel.newRow.addButton("Find duplicates").onAction_disableEnable(findDuplicates(false))
   panel.newRow.addButton("Delete duplicates").onAction_disableEnable(findDuplicates(true))
   val progress = panel.newRow.addProgressBar(0, 1, "%dMB")
-  val logs = panel.newRow("f:1px:g").span(1).addTextArea("")
+  val logs = panel.newRow("f:1px:g").span(1).addTextArea()
 
   val frame = new JFrame()
     .title("Handle duplicates")
@@ -30,7 +64,8 @@ object DuplicateDelete extends App {
   dirs.onChanged(() => frame.size(frame.getWidth + 1, frame.getHeight + 1))
 
   private def findDuplicates(withDelete: Boolean) = {
-    val files = dirs.getValues.map(_.asDir.fileTreeWithItself.filter(_.isFile).toList).flatten.distinct
+    val deletablePaths = if(withDelete) dirs.getValues.filter(_._2).map(_._1) else List() 
+    val files = dirs.getTexts.flatMap(_.asDir.fileTreeWithItself.filter(_.isFile).toList).distinct
     val fileGroupsByLength = files.groupBy(_.length())
 
     val filesSingle = fileGroupsByLength.filter(_._2.size == 1).values.flatten.toList
@@ -66,15 +101,25 @@ object DuplicateDelete extends App {
         SwingPlus.invokeLater {
           logs.append("\n\n")
           val hash = hashFiles._1
-          val files = hashFiles._2.sortBy(f => f.getName.length)
-          val fileToKeep = files.head
-          remainingFilesCt += 1
-          val filesToDelete = files.tail
-
           logs.append(hash + "\n")
-          logs.append(("Keep", fileToKeep.length, fileToKeep.getName) + "\n")
-          logs.append(filesToDelete.map(file => ("Delete", file.length, file.getName)).mkString("\n"))
+          
+          val files = hashFiles._2.sortBy(f => f.getName.length)
+          logs.append(files.map(file => ("File", file.length, file.getName)).mkString("\n")+"\n")
+          
+          val filesToDeleteCandidates = files.filter(fileToDelete => deletablePaths.exists(deletablePath => fileToDelete.getAbsolutePath.contains(deletablePath)))
+          logs.append(filesToDeleteCandidates.map(file => ("filesToDeleteCandidates", file.length, file.getName)).mkString("\n")+"\n")
+          val filesToKeepCandidates = files.filter(file => !filesToDeleteCandidates.contains(file))
+          logs.append(filesToKeepCandidates.map(file => ("filesToKeepCandidates", file.length, file.getName)).mkString("\n")+"\n")
+
+          val filesToKeep = if(filesToKeepCandidates.isEmpty) List(filesToDeleteCandidates.head) else filesToKeepCandidates
+          remainingFilesCt += filesToKeep.size
+          val filesToDelete = if(filesToKeepCandidates.isEmpty) filesToDeleteCandidates.tail else filesToDeleteCandidates 
+          
+          logs.append(filesToKeep.map(file => ("Keep", file.length, file.getName)).mkString("\n")+"\n")
+          logs.append(filesToDelete.map(file => ("Delete", file.length, file.getName)).mkString("\n")+"\n")
+          
           if (withDelete) filesToDelete.foreach(_.delete)
+          
         }
       }
     }
