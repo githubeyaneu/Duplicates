@@ -8,8 +8,9 @@ import eu.eyan.util.string.StringPlus.StringPlusImplicit
 import eu.eyan.util.swing.JButtonPlus.JButtonImplicit
 import eu.eyan.util.swing.JComponentPlus.JComponentImplicit
 import eu.eyan.util.swing.JFramePlus.JFramePlusImplicit
+import eu.eyan.util.swing.JTextAreaPlus.JTextAreaImplicit
 import eu.eyan.util.swing.JTextFieldPlus.JTextFieldPlusImplicit
-import eu.eyan.util.swing.{JPanelWithFrameLayout, MultiFieldJTextField, SwingPlus}
+import eu.eyan.util.swing.{JPanelWithFrameLayout, MultiFieldJTextField}
 import javax.swing.JFrame
 
 import scala.collection.mutable
@@ -84,9 +85,7 @@ object DuplicateDelete extends App {
   dirs.onChanged(() => frame.size(frame.getWidth + 1, frame.getHeight + 1))
 
   private def findDuplicates(withDelete: Boolean) = {
-    SwingPlus.invokeLater {
-      allowDelete.setSelected(false)
-    }
+    allowDelete.setSelected(false)
     val deletablePaths = dirs.getValues.filter(_._2).map(_._1)
     val dirPaths = dirs.getValues.filter(_._3).map(_._1).toStream
     val filesStreams = dirPaths.flatMap(_.asDir.fileTreeWithItself.filter(_.isFile))
@@ -95,15 +94,11 @@ object DuplicateDelete extends App {
     progress.setMaximum(Int.MaxValue)
     val files = filesStreams.collect { case file =>
       fileCt += 1
-
-      if (fileCt % 100 == 0) SwingPlus.invokeLater {
-        progress.setNewValue(fileCt.toInt)
-      }
+      if (fileCt % 100 == 0) progress.valueChanged(fileCt.toInt)
       file
     }.toList.distinct
-    SwingPlus.invokeLater {
-      progress.setNewValue(fileCt.toInt)
-    }
+    progress.valueChanged(fileCt.toInt)
+
     val fileGroupsByLength = files.groupBy(_.length())
 
     val filesSingle = fileGroupsByLength.filter(_._2.size == 1).values.flatten.toList
@@ -114,22 +109,20 @@ object DuplicateDelete extends App {
     val sumSingleMB = (filesSingle.map(_.length).sum / 1000 / 1000).toInt
     val sumMultiMB = (filesMultiGroups.flatten.map(_.length).sum / 1000 / 1000).toInt
 
-    SwingPlus.invokeLater {
-      logs.setText("")
-      logs.append("Files found: " + files.size + ", Size: " + sumMB + N)
-      logs.append("Single: " + filesSingle.size + ", Size single: " + (sumSingleMB / 1000) + "GB" + N)
-      logs.append("Multi : " + filesMultiGroups.flatten.size + " (" + filesMultiGroups.size + " groups), Size multi:" + (sumMultiMB / 1000) + "GB" + N)
+    logs.setText("")
+    logs.appendLater("Files found: " + files.size + ", Size: " + sumMB + N)
+    logs.appendLater("Single: " + filesSingle.size + ", Size single: " + (sumSingleMB / 1000) + "GB" + N)
+    logs.appendLater("Multi : " + filesMultiGroups.flatten.size + " (" + filesMultiGroups.size + " groups), Size multi:" + (sumMultiMB / 1000) + "GB" + N)
 
-      progress.setFormat("%dMB")
-      progress.setMaximum(sumMultiMB)
-      progress.setNewValue(0)
-    }
+    progress.setFormat("%dMB")
+    progress.setMaximum(sumMultiMB)
+    progress.valueChanged(0)
 
     var sum = 0L
 
-    def updateProgress(readBytes: Long) = SwingPlus.invokeLater {
+    def updateProgress(readBytes: Long) = {
       sum += readBytes
-      progress.setNewValue((sum / 1000 / 1000).toInt)
+      progress.valueChanged((sum / 1000 / 1000).toInt)
     }
 
     var remainingFilesCt = 0
@@ -142,44 +135,37 @@ object DuplicateDelete extends App {
 
 
       hashGroups.foreach { hashFiles =>
-        if (hashFiles._2.size < 2) SwingPlus.invokeLater {
-          logs.append(".")
+        if (hashFiles._2.size < 2) logs.appendLater(".")
+        else  {
+          logs.appendLater(N + N)
+          val hash = hashFiles._1
+          logs.appendLater(hash + N)
+
+          val files = hashFiles._2.sortBy(f => f.getName.length)
+          files.map(_.getParentFile).foreach(dirsContainingDuplicates.add)
+          //          logs.append(files.map(file => ("File", file.length, file.getAbsolutePath)).mkString(N)+N)
+
+          val filesToDeleteCandidates = files.filter(fileToDelete => deletablePaths.exists(fileToDelete.getAbsolutePath.contains(_)))
+          //          logs.append(filesToDeleteCandidates.map(file => ("filesToDeleteCandidates", file.length, file.getAbsolutePath)).mkString(N)+N)
+          val filesToKeepCandidates = files.filter(file => !filesToDeleteCandidates.contains(file))
+          //          logs.append(filesToKeepCandidates.map(file => ("filesToKeepCandidates", file.length, file.getAbsolutePath)).mkString(N)+N)
+
+          val filesToKeep = if (filesToKeepCandidates.isEmpty) List(filesToDeleteCandidates.head) else filesToKeepCandidates
+          remainingFilesCt += filesToKeep.size
+          val filesToDelete = if (filesToKeepCandidates.isEmpty) filesToDeleteCandidates.tail else filesToDeleteCandidates
+
+
+          logs.appendLater(filesToKeep.map(file => ("Keep", file.length, file.getAbsolutePath)).mkString(N) + N)
+          logs.appendLater(filesToDelete.map(file => ("Delete", file.length, file.getAbsolutePath)).mkString(N) + N)
+          deleteCt += filesToDelete.size
+
+          if (withDelete) filesToDelete.foreach(_.delete)
         }
-        else
-          SwingPlus.invokeLater {
-            logs.append(N + N)
-            val hash = hashFiles._1
-            logs.append(hash + N)
-
-            val files = hashFiles._2.sortBy(f => f.getName.length)
-            files.map(_.getParentFile).foreach(dirsContainingDuplicates.add)
-            //          logs.append(files.map(file => ("File", file.length, file.getAbsolutePath)).mkString(N)+N)
-
-            val filesToDeleteCandidates = files.filter(fileToDelete => deletablePaths.exists(fileToDelete.getAbsolutePath.contains(_)))
-            //          logs.append(filesToDeleteCandidates.map(file => ("filesToDeleteCandidates", file.length, file.getAbsolutePath)).mkString(N)+N)
-            val filesToKeepCandidates = files.filter(file => !filesToDeleteCandidates.contains(file))
-            //          logs.append(filesToKeepCandidates.map(file => ("filesToKeepCandidates", file.length, file.getAbsolutePath)).mkString(N)+N)
-
-            val filesToKeep = if (filesToKeepCandidates.isEmpty) List(filesToDeleteCandidates.head) else filesToKeepCandidates
-            remainingFilesCt += filesToKeep.size
-            val filesToDelete = if (filesToKeepCandidates.isEmpty) filesToDeleteCandidates.tail else filesToDeleteCandidates
-
-
-            logs.append(filesToKeep.map(file => ("Keep", file.length, file.getAbsolutePath)).mkString(N) + N)
-            logs.append(filesToDelete.map(file => ("Delete", file.length, file.getAbsolutePath)).mkString(N) + N)
-            deleteCt += filesToDelete.size
-
-            if (withDelete) filesToDelete.foreach(_.delete)
-
-          }
       }
     }
 
-    SwingPlus.invokeLater {
-      logs.append(N + N + "dirsContainingDuplicates: " + N + dirsContainingDuplicates.toList.sorted.mkString(N))
-      logs.append(N + N + "DeleteCt: " + deleteCt)
-      logs.append(N + N + "Expected: " + (filesSingle.size + remainingFilesCt))
-    }
-
+    logs.appendLater(N + N + "dirsContainingDuplicates: " + N + dirsContainingDuplicates.toList.sorted.mkString(N))
+    logs.appendLater(N + N + "DeleteCt: " + deleteCt)
+    logs.appendLater(N + N + "Expected: " + (filesSingle.size + remainingFilesCt))
   }
 }
